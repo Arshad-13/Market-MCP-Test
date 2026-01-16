@@ -1,98 +1,75 @@
+"""
+Market Intelligence MCP Server
+
+A comprehensive market analysis server merging Genesis2025 HFT analytics
+with broad market intelligence tools.
+"""
+
 import os
 import httpx
-from mcp.server.fastmcp import FastMCP
-from dotenv import load_dotenv
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Load environment variables from the same directory as this script
+from mcp.server.fastmcp import FastMCP
+
+# Import tool registration functions
+from tools import (
+    register_price_tools,
+    register_microstructure_tools,
+    register_anomaly_tools,
+    register_sentiment_tools,
+    register_defi_tools,
+    register_exchange_tools,
+    register_ml_tools,
+    register_portfolio_tools
+)
+from prompts import register_prompts
+
+# Load environment variables
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
-API_KEY = os.getenv("CRYPTO_API_KEY")
 
 # Initialize the MCP Server
 mcp = FastMCP("Market Intelligence")
 
-# Constants
-COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3"
+# Register all tools
+register_price_tools(mcp)
+register_microstructure_tools(mcp)
+register_anomaly_tools(mcp)
+register_sentiment_tools(mcp)
+register_defi_tools(mcp)
+register_exchange_tools(mcp)
+register_ml_tools(mcp)
+register_portfolio_tools(mcp)
 
-def get_headers():
-    headers = {"accept": "application/json"}
-    if API_KEY:
-        headers["x-cg-demo-api-key"] = API_KEY
-    return headers
+# Register prompts
+register_prompts(mcp)
 
-@mcp.tool()
-async def get_crypto_price(asset_id: str, vs_currencies: str = "usd") -> str:
-    """
-    Fetch live cryptocurrency prices from CoinGecko.
-    
-    Args:
-        asset_id: The ID of the crypto asset (e.g., 'bitcoin', 'ethereum').
-        vs_currencies: Comma-separated target currencies (default: 'usd').
-    """
-    url = f"{COINGECKO_BASE_URL}/simple/price"
-    params = {
-        "ids": asset_id,
-        "vs_currencies": vs_currencies,
-        "include_24hr_change": "true"
-    }
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, params=params, headers=get_headers())
-            response.raise_for_status()
-            data = response.json()
-            return str(data)
-        except httpx.HTTPError as e:
-            return f"Error fetching price: {str(e)}"
-
-@mcp.tool()
-def analyze_spread(bid_price: float, ask_price: float) -> str:
-    """
-    Compute market microstructure metrics based on bid and ask prices.
-    
-    Args:
-        bid_price: The highest price a buyer is willing to pay.
-        ask_price: The lowest price a seller is willing to accept.
-    """
-    if bid_price >= ask_price:
-        return "Error: Bid price must be lower than ask price for a valid spread analysis."
-        
-    spread = ask_price - bid_price
-    mid_price = (ask_price + bid_price) / 2
-    spread_bps = (spread / mid_price) * 10000
-    
-    analysis = {
-        "spread_absolute": round(spread, 6),
-        "mid_price": round(mid_price, 6),
-        "spread_basis_points": round(spread_bps, 2),
-        "liquidity_classification": "High" if spread_bps < 5 else "Medium" if spread_bps < 20 else "Low"
-    }
-    
-    return str(analysis)
-
+# System Resources
 @mcp.resource("market://status")
 async def get_connectivity_status() -> str:
     """
-    Check the connectivity status of the Market Intelligence Server and CoinGecko API.
+    Check the connectivity status of the Market Intelligence Server and external APIs.
     """
+    api_key_configured = bool(os.getenv("CRYPTO_API_KEY"))
     status = {
         "server_status": "online",
-        "api_key_configured": bool(API_KEY),
-        "coingecko_api_reachable": "unknown"
+        "api_key_configured": api_key_configured,
+        "coingecko_status": "unknown"
     }
     
     # Simple ping to CoinGecko
-    url = f"{COINGECKO_BASE_URL}/ping"
+    url = "https://api.coingecko.com/api/v3/ping"
+    headers = {"accept": "application/json"}
+    if api_key_configured:
+        headers["x-cg-demo-api-key"] = os.getenv("CRYPTO_API_KEY")
+        
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers=get_headers(), timeout=5.0)
-            if response.status_code == 200:
-                status["coingecko_api_reachable"] = True
-            else:
-                status["coingecko_api_reachable"] = False
-        except:
-            status["coingecko_api_reachable"] = False
+            response = await client.get(url, headers=headers, timeout=5.0)
+            status["coingecko_status"] = "reachable" if response.status_code == 200 else f"error_{response.status_code}"
+        except Exception as e:
+            status["coingecko_status"] = f"unreachable_{str(e)}"
             
     return str(status)
 
