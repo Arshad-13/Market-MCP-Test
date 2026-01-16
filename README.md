@@ -151,4 +151,4 @@ Market-MCP-Test/
 
 ## 📜 License
 
-MIT License. Based on the Genesis2025 HFT Platform.
+MIT License. Based on the HFT Platform.
