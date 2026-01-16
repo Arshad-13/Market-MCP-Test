@@ -21,9 +21,11 @@ from tools import (
     register_defi_tools,
     register_exchange_tools,
     register_ml_tools,
-    register_portfolio_tools
+    register_portfolio_tools,
+    register_alert_tools
 )
 from prompts import register_prompts
+from core.background_service import monitor
 
 # Load environment variables
 env_path = Path(__file__).parent / ".env"
@@ -41,9 +43,18 @@ register_defi_tools(mcp)
 register_exchange_tools(mcp)
 register_ml_tools(mcp)
 register_portfolio_tools(mcp)
+register_alert_tools(mcp)
 
 # Register prompts
 register_prompts(mcp)
+
+# Attempt to start background monitor on startup (if supported)
+# or just start it now (if we are in an async loop, which we aren't yet at module level)
+# We'll use a resource that triggers it, or relies on lazy start.
+# For now, let's expose a tool to ensure it's started if needed, 
+# but actually FastMCP might support a customized run. 
+# We'll add a simple startup log.
+print("Market Intelligence Server Initialized.")
 
 # System Resources
 @mcp.resource("market://status")

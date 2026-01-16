@@ -12,6 +12,7 @@ from .defi_tools import register_defi_tools
 from .exchange_tools import register_exchange_tools
 from .ml_tools import register_ml_tools
 from .portfolio_tools import register_portfolio_tools
+from .alert_tools import register_alert_tools
 
 __all__ = [
     "register_price_tools",
@@ -22,4 +23,5 @@ __all__ = [
     "register_exchange_tools",
     "register_ml_tools",
     "register_portfolio_tools",
+    "register_alert_tools",
 ]

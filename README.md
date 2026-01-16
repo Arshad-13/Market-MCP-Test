@@ -40,6 +40,10 @@ This MCP server provides a suite of tools for **crypto price tracking, market se
 - **Risk Analysis**: Score portfolios on concentration and volatility (`analyze_portfolio_risk`).
 - **Execution Simulator**: Estimate slippage for large trades (`simulate_slippage`).
 
+### 7. Smart Notifications (New)
+- **Background Monitor**: Light-weight service checking market conditions.
+- **Alerts**: Create and check alerts (`create_price_alert`, `check_alerts`).
+
 ## Prerequisites
 
 - Python 3.10+
