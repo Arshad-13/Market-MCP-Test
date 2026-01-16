@@ -1,110 +1,154 @@
-# Market Intelligence MCP Server
+# 🧠 Market Intelligence MCP Server
 
-A comprehensive market analysis server merging advanced HFT analytics from Genesis2025 with broad market intelligence tools.
+A **Best-in-Class** Model Context Protocol (MCP) server for Professional Crypto Market Analysis. 
 
-This MCP server provides a suite of tools for **crypto price tracking, market sentiment analysis, DeFi statistics, and professional-grade order book microstructure analysis** (OFI, Microprice, Spoofing Detection).
+This server transforms your LLM (Claude/Gemini) into an **Autonomous HFT Quant Agent** capable of real-time surveillance, predictive modeling, and risk assessment.
 
-## Features
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![MCP](https://img.shields.io/badge/MCP-Enabled-green.svg)
 
-### 1. Core Market Data
-- **Prices**: Real-time crypto prices, market cap, and volume (`get_crypto_price`).
-- **Details**: Comprehensive asset metadata and links (`get_coin_details`).
-- **History**: Historical OHLC price data (`get_historical_prices`).
-- **Trends**: Top 7 trending coins on CoinGecko (`get_trending_coins`).
-- **Global**: Global market cap and dominance metrics (`get_global_market_data`).
+---
 
-### 2. Microstructure Analytics (HFT)
-*Adapted from Genesis2025 Engine*
-- **Order Book Analysis**: Calculate Order Flow Imbalance (OFI) and Order Book Imbalance (OBI) (`analyze_orderbook`).
-- **Microprice**: Compute volume-weighted fair price (`calculate_microprice`).
-- **Spread Analysis**: Analyze bid-ask spread and liquidity (`analyze_bid_ask_spread`).
+## ✨ Key Capabilities
 
-### 3. Anomaly Detection & Surveillance
-*Professional Grade Market Surveillance*
-- **Spoofing Detection**: Identify potential spoofing/layering attempts (`detect_spoofing`).
-- **Liquidity Gaps**: Detect dangerous thin liquidity levels (`detect_liquidity_gaps`).
-- **Market Regime**: Classify market state (Calm, Stressed, Manipulation Suspected) (`get_market_regime`).
-- **Full Scan**: Comprehensive anomaly scan (`detect_anomalies`).
+The server integrates institutional-grade analytics from **Genesis2025** and expands them with live connectivity.
 
-### 4. External Intelligence
-- **Sentiment**: Crypto Fear & Greed Index (`get_fear_and_greed_index`).
-- **DeFi**: Total Value Locked (TVL) and protocol stats (`get_defi_global_stats`, `get_protocol_tvl`).
-- **On-Chain**: Ethereum gas tracking (`get_gas_price`).
+### 1. ⚡ Real-Time Exchange Connectivity
+- **Live Order Books**: Fetch Level 2 data directly from Binance, Kraken, Coinbase, and more via `ccxt`.
+- **Tickers**: Multi-asset price and volume monitoring.
+- **Tools**: `fetch_orderbook`, `fetch_ticker`
 
-### 5. Exchange & AI (New)
-- **Live Data**: Fetch real-time order books/tickers from Binance/Kraken (`fetch_orderbook`, `fetch_ticker`).
-- **AI Prediction**: Predict price direction using DeepLOB logic (`predict_price_direction`).
-- **Volatility**: Analyze volatility regimes (`analyze_volatility_regime`).
+### 2. 🧠 AI & Predictive Analytics
+- **DeepLOB Lite**: Lightweight ML model that predicts short-term price direction ("UP"/"DOWN") based on Order Flow Imbalance (OFI).
+- **Regime Detection**: Classify markets as "Calm", "Volatile", or "Manipulated".
+- **Tools**: `predict_price_direction`, `analyze_volatility_regime`
 
-### 6. Portfolio Intelligence (New)
-- **Risk Analysis**: Score portfolios on concentration and volatility (`analyze_portfolio_risk`).
-- **Execution Simulator**: Estimate slippage for large trades (`simulate_slippage`).
+### 3. 🔬 Microstructure Surveillance
+- **Anomaly Detection**: Detect layering, spoofing, and liquidity gaps in the order book.
+- **Advanced Metrics**: Calculate Microprice, VPIN (Volume-Synchronized Probability of Informed Trading), and Spread efficiency.
+- **Tools**: `analyze_orderbook`, `detect_spoofing`, `calculate_microprice`
 
-### 7. Smart Notifications (New)
-- **Background Monitor**: Light-weight service checking market conditions.
-- **Alerts**: Create and check alerts (`create_price_alert`, `check_alerts`).
+### 4. 🛡️ Portfolio & Risk Intelligence
+- **Risk Scoring**: Evaluate portfolios for concentration risk and volatility exposure.
+- **Slippage Simulator**: Estimate execution costs and market impact for large trades ("Whale Simulation").
+- **Tools**: `analyze_portfolio_risk`, `simulate_slippage`
 
-## Prerequisites
+### 5. 🔔 Smart Notifications
+- **Background Monitor**: Persistent service detecting market events.
+- **Alert System**: Set price triggers and receive proactive notifications.
+- **Tools**: `create_price_alert`, `check_alerts`
 
-- Python 3.10+
-- **CoinGecko API Key** (Demo/Free key works).
-- **Etherscan API Key** (Optional, for live gas tracking).
+### 6. 🌐 Macro & Sentiment
+- **Fear & Greed**: Real-time market sentiment index.
+- **DeFi Intelligence**: TVL and Protocol stats via DeFi Llama.
+- **Gas Tracking**: Live Ethereum gas prices.
+- **Tools**: `get_fear_and_greed_index`, `get_defi_global_stats`, `get_gas_price`
 
-## Setup
+---
 
-1. **Create Virtual Environment**:
+## 🚀 Installation
+
+### Prerequisites
+- Python 3.10 or higher
+- [uv](https://github.com/astral-sh/uv) (recommended) or pip
+
+### Quick Start
+
+1. **Clone & Install**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
-   ```
-
-2. **Install Dependencies**:
-   ```bash
+   git clone https://github.com/Arshad-13/Market-MCP-Test.git
+   cd Market-MCP-Test
    pip install -r requirements.txt
    ```
 
-3. **Configure Environment**:
-   Create a `.env` file in the project root:
+2. **Configuration**
+   Create a `.env` file in the root directory:
    ```env
-   CRYPTO_API_KEY=your_coingecko_key
-   ETHERSCAN_API_KEY=your_etherscan_key  # Optional
+   # Required for CoinGecko Pro (optional for free tier but recommended)
+   CRYPTO_API_KEY=your_coingecko_key_here
+   
+   # Optional for Gas tracking
+   ETHERSCAN_API_KEY=your_etherscan_key_here
    ```
 
-## Configuration for Claude Desktop
+3. **Running the Server**
+   ```bash
+   mcp run market_server.py
+   ```
 
-Add to `%APPDATA%\Claude\claude_desktop_config.json`:
+---
+
+## 🔌 Integration with Claude Desktop
+
+Add this to your `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "market-intelligence": {
       "command": "python",
-      "args": ["S:\\Market-MCP\\Market-MCP-Test\\market_server.py"],
+      "args": [
+        "S:\\Market-MCP\\Market-MCP-Test\\market_server.py"
+      ],
       "env": {
-        "CRYPTO_API_KEY": "your_key_here",
-        "ETHERSCAN_API_KEY": "optional_key_here"
+        "CRYPTO_API_KEY": "your_key",
+        "PYTHONPATH": "S:\\Market-MCP\\Market-MCP-Test"
       }
     }
   }
 }
 ```
 
-## Running Manually
+---
+
+## 🧪 Testing
+
+The project includes a comprehensive verification suite:
 
 ```bash
-python market_server.py
-```
+# 1. Core Analytics Logic
+python tests/test_core_analytics.py
 
-## Testing
+# 2. External APIs (Sentiment/DeFi)
+python tests/test_external_apis.py
 
-Run the verification suite:
-```bash
-# Test Core Analysis Logic
-python tests/test_phase1_2.py
+# 3. Exchange Connectivity (Mocked)
+python tests/test_exchange_tools.py
 
-# Test External APIs (Mocked)
-python tests/test_phase4.py
+# 4. AI Prediction Engine
+python tests/test_ml_prediction.py
 
-# Test Full Integration
+# 5. Portfolio Risk
+python tests/test_portfolio_tools.py
+
+# 6. Alerts & Notifications
+python tests/test_alert_tools.py
+
+# Run All Integration Tests
 python tests/test_integration.py
 ```
+
+---
+
+## 🏗️ Architecture
+
+```
+Market-MCP-Test/
+├── core/                   # Analytics Engine (Ported from Genesis2025)
+│   ├── analytics.py        # Microstructure math (OFI, OBI, VPIN)
+│   ├── anomaly_detection.py# Spoofing/Layering logic
+│   └── background_service.py # Alert monitor
+├── tools/                  # MCP Tool Definitions
+│   ├── exchange_tools.py   # ccxt connectivity
+│   ├── ml_tools.py         # AI inference
+│   ├── portfolio_tools.py  # Risk analysis
+│   └── ...
+├── prompts/                # Prompt Templates
+├── tests/                  # Verification Suite
+└── market_server.py        # Main Entry Point
+```
+
+---
+
+## 📜 License
+
+MIT License. Based on the Genesis2025 HFT Platform.
