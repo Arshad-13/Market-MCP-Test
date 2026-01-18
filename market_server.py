@@ -22,10 +22,13 @@ from tools import (
     register_exchange_tools,
     register_ml_tools,
     register_portfolio_tools,
-    register_alert_tools
+    register_alert_tools,
+    register_trading_tools,
+    register_strategy_tools
 )
 from prompts import register_prompts
 from core.background_service import monitor
+from core.database import db
 
 # Load environment variables
 env_path = Path(__file__).parent / ".env"
@@ -44,6 +47,8 @@ register_exchange_tools(mcp)
 register_ml_tools(mcp)
 register_portfolio_tools(mcp)
 register_alert_tools(mcp)
+register_trading_tools(mcp)
+register_strategy_tools(mcp)
 
 # Register prompts
 register_prompts(mcp)

@@ -47,7 +47,28 @@ The server integrates institutional-grade analytics from **Genesis2025** and exp
 
 ## 🚀 Installation
 
-### Prerequisites
+#- **Alerts**: Create and check alerts (`create_price_alert`, `check_alerts`).
+
+### 8. Persistence (New)
+- **SQLite Database**: Stores alerts and history locally (`market_data.db`).
+- **Resiliency**: Data survives server generation restarts.
+
+### 9. Execution Engine (New)
+- **Risk Guard**: Pre-trade checks for max size and loss limits (`risk_engine`).
+- **Paper Trading**: Safe, simulated execution mode (`execute_order`).
+
+### 10. Strategy Engine (New)
+- **Orchestrator**: Combines ML, Sentiment, and Risk/Reward into a final `Signal`.
+### 10. Strategy Engine (New)
+- **Orchestrator**: Combines ML, Sentiment, and Risk/Reward into a final `Signal`.
+- **Tools**: `get_trading_signal` (Buy/Sell/Hold confidence).
+
+### 11. Interactive Dashboard (New)
+- **UI**: Streamlit web interface.
+- **Features**: Live Orderbook, ML Confidence charting, Portfolio view.
+- **Run**: `streamlit run dashboard.py`
+
+## Prerequisites
 - Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) (recommended) or pip
 

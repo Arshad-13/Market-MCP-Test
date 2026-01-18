@@ -8,8 +8,9 @@ import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-# Simple in-memory alert store
-_ALERTS: List[Dict[str, Any]] = []
+from core.database import db
+
+# Simple in-memory alert store REMOVED in favor of SQLite
 _WATCHLIST: List[str] = ["BTC", "ETH", "SOL"]
 
 class MarketMonitor:
@@ -52,7 +53,7 @@ class MarketMonitor:
                 # Example check: Time-based alerts (just to prove it runs)
                 now = datetime.now()
                 if now.minute == 0 and now.second < 10:
-                    self.add_alert("SYSTEM", "Hourly heartbeat check.")
+                    await self.add_alert("SYSTEM", "Hourly heartbeat check.")
                 
                 await asyncio.sleep(60) # FAST REFRESH FOR DEMO? No, 60s is safer.
                 
@@ -60,30 +61,24 @@ class MarketMonitor:
                 self.logger.error(f"Error in monitor loop: {e}")
                 await asyncio.sleep(60)
 
-    def add_alert(self, symbol: str, message: str, severity: str = "INFO"):
+    async def add_alert(self, symbol: str, message: str, severity: str = "INFO"):
         """
-        Add an alert to the system.
+        Add an alert to the system (Persistent).
         """
-        alert = {
-            "timestamp": datetime.now().isoformat(),
-            "symbol": symbol,
-            "message": message,
-            "severity": severity,
-            "read": False
-        }
-        _ALERTS.insert(0, alert)
-        # Keep size manageable
-        if len(_ALERTS) > 100:
-            _ALERTS.pop()
-            
-    def get_alerts(self, unread_only: bool = False) -> List[Dict[str, Any]]:
-        if unread_only:
-            return [a for a in _ALERTS if not a["read"]]
-        return _ALERTS
+        try:
+            await db.add_alert(symbol, message, severity)
+        except Exception as e:
+            self.logger.error(f"Failed to persist alert: {e}")
 
-    def mark_all_read(self):
-        for a in _ALERTS:
-            a["read"] = True
+    # get_alerts and mark_all_read Removed from Monitor to decouple.
+    # Tools should access DB directly or via this service wrapper if preferred.
+    # To keep tools simple, we will keep wrappers but delegate to DB.
+    
+    async def get_alerts(self, unread_only: bool = False) -> List[Dict[str, Any]]:
+        return await db.get_alerts(unread_only)
+
+    async def mark_all_read(self):
+        await db.mark_all_read()
 
 # Global instance
 monitor = MarketMonitor()

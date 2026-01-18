@@ -11,10 +11,10 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 from mcp.server.fastmcp import FastMCP
-from core.analytics import OrderBook, MicrostructureAnalyzer
+from core.ml_models import DeepLOBLite
 
-# Global analyzer for feature extraction
-_analyzer = MicrostructureAnalyzer()
+# Global model instance
+_model = DeepLOBLite()
 
 def register_ml_tools(mcp: FastMCP) -> None:
     """
@@ -33,71 +33,28 @@ def register_ml_tools(mcp: FastMCP) -> None:
         """
         Predict short-term price direction using a lightweight ML-based heuristic model.
         
-        Uses Order Flow Imbalance (OFI) and Order Book Imbalance (OBI) as primary features,
-        calibrated to mimic DeepLOB's attention to liquidity distribution.
-        
         Args:
             bids: List of [price, volume] pairs.
             asks: List of [price, volume] pairs.
-            horizon_seconds: Prediction horizon (informational only for this lite model).
+            horizon_seconds: Prediction horizon (informational only).
             
         Returns:
             JSON string with probabilities for [UP, DOWN, STATIONARY].
         """
         try:
-            # 1. Feature Extraction
-            book = OrderBook.from_raw(bids, asks, datetime.now())
-            metrics = _analyzer.analyze(book)
+            # Delegate to core model
+            result = _model.predict(bids, asks)
             
-            # Features
-            ofi = metrics.ofi  # Order Flow Imbalance (-1 to 1 theoretical range, usually smaller)
-            obi = metrics.obi  # Order Book Imbalance (-1 to 1)
-            mp_divergence = metrics.microprice_divergence # Microprice - Midprice
+            # Add metadata
+            result["model"] = "DeepLOB_Lite_v1"
+            result["timestamp"] = datetime.now().isoformat()
             
-            # 2. Inference Logic (DeepLOB Lite)
-            # We use a calibrated logistic-style function based on HFT literature
-            # OFI is the strongest predictor for immediate moves.
-            # OBI is a sustaining factor.
+            # JSON serialization formatting for floats (rounding for display)
+            result["confidence"] = round(result["confidence"], 3)
+            result["probabilities"] = {k: round(v, 3) for k, v in result["probabilities"].items()}
+            result["features"]["microprice_div"] = round(result["features"]["microprice_div"], 6)
             
-            # Synthetic logits
-            logit_up = (ofi * 2.5) + (obi * 1.5) + (mp_divergence * 100.0)
-            logit_down = -(ofi * 2.5) - (obi * 1.5) - (mp_divergence * 100.0)
-            logit_stationary = 2.0 - abs(logit_up) # Bias towards stationary if signal is weak
-            
-            # Softmax
-            logits = np.array([logit_up, logit_stationary, logit_down])
-            exp_logits = np.exp(logits - np.max(logits)) # Stability
-            probs = exp_logits / np.sum(exp_logits)
-            
-            p_up, p_stat, p_down = probs
-            
-            # 3. Confidence & Signal
-            if p_up > 0.45 and p_up > p_down:
-                signal = "UP"
-                confidence = p_up
-            elif p_down > 0.45 and p_down > p_up:
-                signal = "DOWN"
-                confidence = p_down
-            else:
-                signal = "STATIONARY"
-                confidence = p_stat
-                
-            return json.dumps({
-                "signal": signal,
-                "confidence": round(float(confidence), 3),
-                "probabilities": {
-                    "up": round(float(p_up), 3),
-                    "stationary": round(float(p_stat), 3),
-                    "down": round(float(p_down), 3)
-                },
-                "features": {
-                    "ofi": metrics.ofi,
-                    "obi": metrics.obi,
-                    "microprice_div": round(metrics.microprice_divergence, 6)
-                },
-                "model": "DeepLOB_Lite_v1",
-                "timestamp": datetime.now().isoformat()
-            })
+            return json.dumps(result)
             
         except Exception as e:
             return json.dumps({
