@@ -68,6 +68,13 @@ The server integrates institutional-grade analytics from **Genesis2025** and exp
 - **Features**: Live Orderbook, ML Confidence charting, Portfolio view.
 - **Run**: `streamlit run dashboard.py`
 
+### 12. Multi-Agent System (New)
+- **RiskAgent**: Portfolio concentration, exposure limits.
+- **ExecutionAgent**: Smart order routing.
+- **ResearchAgent**: Deep market analysis.
+- **ManagerAgent**: Orchestrates all agents with weighted voting.
+- **Tools**: `run_analysis_pipeline` (triggers full agent swarm).
+
 ## Prerequisites
 - Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) (recommended) or pip

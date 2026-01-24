@@ -15,6 +15,7 @@ from .portfolio_tools import register_portfolio_tools
 from .alert_tools import register_alert_tools
 from .trading_tools import register_trading_tools
 from .strategy_tools import register_strategy_tools
+from .agent_tools import register_agent_tools
 
 __all__ = [
     "register_price_tools",
@@ -28,4 +29,5 @@ __all__ = [
     "register_alert_tools",
     "register_trading_tools",
     "register_strategy_tools",
+    "register_agent_tools",
 ]
