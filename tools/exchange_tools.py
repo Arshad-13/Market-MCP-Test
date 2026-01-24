@@ -17,15 +17,27 @@ SUPPORTED_EXCHANGES = ["binance", "kraken", "coinbase", "kucoin", "bybit", "okx"
 
 async def _get_exchange(exchange_id: str):
     """
-    Factory to get an exchange instance.
+    Factory to get an exchange instance with proper configuration.
     """
+    import sys
     exchange_id = exchange_id.lower()
     if exchange_id not in ccxt.exchanges:
         raise ValueError(f"Exchange '{exchange_id}' not found in CCXT.")
     
-    # Instantiate the exchange class dynamically
+    # Instantiate the exchange class dynamically with config
     exchange_class = getattr(ccxt, exchange_id)
-    exchange = exchange_class()
+    exchange = exchange_class({
+        'enableRateLimit': True,  # Respect rate limits
+        'timeout': 30000,  # 30 second timeout (default is 10000)
+        'options': {
+            'defaultType': 'spot',  # Use spot market by default
+        },
+        # CRITICAL: Skip automatic market loading to avoid firewall issues
+        # This prevents CCXT from calling /exchangeInfo during init
+        'fetchMarkets': False,
+    })
+    
+    print(f"[DEBUG] Created {exchange_id} instance (skip metadata load)", file=sys.stderr)
     return exchange
 
 # --- Shared Tools (Accessible by Dashboard & MCP) ---
@@ -50,13 +62,19 @@ async def fetch_orderbook(
     """
     exchange_instance = None
     try:
+        import sys
+        print(f"[DEBUG] Attempting to fetch orderbook for {symbol} from {exchange}", file=sys.stderr)
+        
         exchange_instance = await _get_exchange(exchange)
+        print(f"[DEBUG] Exchange instance created: {exchange}", file=sys.stderr)
         
         # CCXT expects unified symbols. Upper case usually works best.
         formatted_symbol = symbol.upper()
         
-        # Fetch order book
+        # Fetch order book with timeout handling
+        print(f"[DEBUG] Fetching orderbook for {formatted_symbol}...", file=sys.stderr)
         orderbook = await exchange_instance.fetch_order_book(formatted_symbol, limit)
+        print(f"[DEBUG] Orderbook fetched successfully!", file=sys.stderr)
         
         result = {
             "symbol": formatted_symbol,
@@ -70,20 +88,29 @@ async def fetch_orderbook(
         
         return json.dumps(result)
         
-    except ImportError:
+    except ImportError as e:
+        import sys
+        print(f"[ERROR] Import error: {e}", file=sys.stderr)
         return json.dumps({
             "error": "CCXT library not installed",
             "message": "Please install ccxt: pip install ccxt"
         })
     except Exception as e:
+        import sys
+        print(f"[ERROR] Exception in fetch_orderbook: {type(e).__name__}: {e}", file=sys.stderr)
         return json.dumps({
             "error": f"Failed to fetch order book from {exchange}",
             "details": str(e),
+            "error_type": type(e).__name__,
             "hint": f"Check symbol format (e.g., BTC/USDT) and exchange support ({exchange})"
         })
     finally:
         if exchange_instance:
-            await exchange_instance.close()
+            try:
+                await exchange_instance.close()
+            except Exception as e:
+                import sys
+                print(f"[WARN] Error closing exchange: {e}", file=sys.stderr)
 
 async def fetch_ticker(symbol: str, exchange: str = "binance") -> str:
     """
@@ -98,21 +125,24 @@ async def fetch_ticker(symbol: str, exchange: str = "binance") -> str:
     """
     exchange_instance = None
     try:
+        import sys
+        print(f"[DEBUG] Fetching ticker for {symbol} from {exchange}", file=sys.stderr)
+        
         exchange_instance = await _get_exchange(exchange)
         formatted_symbol = symbol.upper()
         
         ticker = await exchange_instance.fetch_ticker(formatted_symbol)
+        print(f"[DEBUG] Ticker fetched successfully for {formatted_symbol}", file=sys.stderr)
         
         result = {
             "symbol": formatted_symbol,
             "exchange": exchange,
             "last_price": ticker.get("last"),
-            "high": ticker.get("high"),
-            "low": ticker.get("low"),
             "bid": ticker.get("bid"),
             "ask": ticker.get("ask"),
+            "high": ticker.get("high"),
+            "low": ticker.get("low"),
             "volume": ticker.get("baseVolume"),
-            "quote_volume": ticker.get("quoteVolume"),
             "percentage_change": ticker.get("percentage"),
             "timestamp": datetime.now().isoformat()
         }
@@ -120,13 +150,20 @@ async def fetch_ticker(symbol: str, exchange: str = "binance") -> str:
         return json.dumps(result)
         
     except Exception as e:
+        import sys
+        print(f"[ERROR] Exception in fetch_ticker: {type(e).__name__}: {e}", file=sys.stderr)
         return json.dumps({
             "error": f"Failed to fetch ticker from {exchange}",
-            "details": str(e)
+            "details": str(e),
+            "error_type": type(e).__name__
         })
     finally:
         if exchange_instance:
-            await exchange_instance.close()
+            try:
+                await exchange_instance.close()
+            except Exception as e:
+                import sys
+                print(f"[WARN] Error closing exchange in fetch_ticker: {e}", file=sys.stderr)
 
 def list_supported_exchanges() -> str:
     """

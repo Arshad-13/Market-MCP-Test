@@ -1,182 +1,380 @@
 # 🧠 Market Intelligence MCP Server
 
-A **Best-in-Class** Model Context Protocol (MCP) server for Professional Crypto Market Analysis. 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://python.org) [![MCP](https://img.shields.io/badge/MCP-2025--06--18-green.svg)](https://modelcontextprotocol.io)
 
-This server transforms your LLM (Claude/Gemini) into an **Autonomous HFT Quant Agent** capable of real-time surveillance, predictive modeling, and risk assessment.
+**Production-Ready AI Trading Agent** | Multi-Agent Orchestration | Real-Time Market Intelligence
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/python-3.10+-blue.svg) ![MCP](https://img.shields.io/badge/MCP-Enabled-green.svg)
-
----
-
-## ✨ Key Capabilities
-
-The server integrates institutional-grade analytics from **Genesis2025** and expands them with live connectivity.
-
-### 1. ⚡ Real-Time Exchange Connectivity
-- **Live Order Books**: Fetch Level 2 data directly from Binance, Kraken, Coinbase, and more via `ccxt`.
-- **Tickers**: Multi-asset price and volume monitoring.
-- **Tools**: `fetch_orderbook`, `fetch_ticker`
-
-### 2. 🧠 AI & Predictive Analytics
-- **DeepLOB Lite**: Lightweight ML model that predicts short-term price direction ("UP"/"DOWN") based on Order Flow Imbalance (OFI).
-- **Regime Detection**: Classify markets as "Calm", "Volatile", or "Manipulated".
-- **Tools**: `predict_price_direction`, `analyze_volatility_regime`
-
-### 3. 🔬 Microstructure Surveillance
-- **Anomaly Detection**: Detect layering, spoofing, and liquidity gaps in the order book.
-- **Advanced Metrics**: Calculate Microprice, VPIN (Volume-Synchronized Probability of Informed Trading), and Spread efficiency.
-- **Tools**: `analyze_orderbook`, `detect_spoofing`, `calculate_microprice`
-
-### 4. 🛡️ Portfolio & Risk Intelligence
-- **Risk Scoring**: Evaluate portfolios for concentration risk and volatility exposure.
-- **Slippage Simulator**: Estimate execution costs and market impact for large trades ("Whale Simulation").
-- **Tools**: `analyze_portfolio_risk`, `simulate_slippage`
-
-### 5. 🔔 Smart Notifications
-- **Background Monitor**: Persistent service detecting market events.
-- **Alert System**: Set price triggers and receive proactive notifications.
-- **Tools**: `create_price_alert`, `check_alerts`
-
-### 6. 🌐 Macro & Sentiment
-- **Fear & Greed**: Real-time market sentiment index.
-- **DeFi Intelligence**: TVL and Protocol stats via DeFi Llama.
-- **Gas Tracking**: Live Ethereum gas prices.
-- **Tools**: `get_fear_and_greed_index`, `get_defi_global_stats`, `get_gas_price`
+Transform your LLM (Claude/GPT) into an autonomous cryptocurrency trading analyst with institutional-grade market surveillance, predictive ML models, and risk management.
 
 ---
 
-## 🚀 Installation
+## ✨ Key Features
 
-#- **Alerts**: Create and check alerts (`create_price_alert`, `check_alerts`).
+### 🤖 Multi-Agent AI System (Phase 15)
+- **ManagerAgent**: Coordinates specialist agents with weighted voting
+- **ResearchAgent**: Market data fetching, ML predictions, analysis reports
+- **RiskAgent**: Portfolio concentration, exposure limits, pre-trade checks
+- **ExecutionAgent**: Smart order routing with slippage optimization
 
-### 8. Persistence (New)
-- **SQLite Database**: Stores alerts and history locally (`market_data.db`).
-- **Resiliency**: Data survives server generation restarts.
+**Agent Pipeline:**
+```
+User Request → ManagerAgent
+    ↓
+    ├─→ ResearchAgent (Fetch orderbook, run ML)
+    ├─→ RiskAgent (Check limits, validate risk)
+    ├─→ ExecutionAgent (Plan execution, estimate cost)
+    └─→ ManagerAgent (Aggregate, weighted voting, decision)
+```
 
-### 9. Execution Engine (New)
-- **Risk Guard**: Pre-trade checks for max size and loss limits (`risk_engine`).
-- **Paper Trading**: Safe, simulated execution mode (`execute_order`).
+### 📊 Real-Time Market Data
+- **Live Order Books**: Binance, Kraken, Coinbase, Bybit, OKX via `ccxt`
+- **Ticker Data**: Multi-asset price, volume, 24h change monitoring
+- **Tools**: `fetch_orderbook`, `fetch_ticker`, `list_supported_exchanges`
 
-### 10. Strategy Engine (New)
-- **Orchestrator**: Combines ML, Sentiment, and Risk/Reward into a final `Signal`.
-### 10. Strategy Engine (New)
-- **Orchestrator**: Combines ML, Sentiment, and Risk/Reward into a final `Signal`.
-- **Tools**: `get_trading_signal` (Buy/Sell/Hold confidence).
+### 🧠 AI & Predictive Analytics
+- **DeepLOB Lite**: Price direction prediction from Order Flow Imbalance
+- **Strategy Engine**: Multi-signal aggregation (ML + Sentiment + Risk)
+- **Regime Detection**: Classify markets (Calm/Volatile/Manipulated)
+- **Tools**: `predict_price_direction`, `get_trading_signal`
 
-### 11. Interactive Dashboard (New)
-- **UI**: Streamlit web interface.
-- **Features**: Live Orderbook, ML Confidence charting, Portfolio view.
+### 🔬 Market Microstructure Analysis
+- **Anomaly Detection**: Spoofing, layering, liquidity gaps
+- **Advanced Metrics**: OFI, OBI, Microprice, VPIN
+- **Tools**: `analyze_orderbook`, `detect_spoofing`, `calculate_microstructure_features`
+
+### 🛡️ Risk Management & Execution
+- **Risk Engine**: Pre-trade checks (max size, daily loss limits)
+- **Paper Trading**: Safe simulated execution mode
+- **Slippage Simulation**: Market impact estimation for large orders
+- **Tools**: `execute_order`, `get_positions`, `analyze_portfolio_risk`
+
+### 🔔 Smart Notifications
+- **Background Service**: Persistent monitoring for price alerts
+- **SQLite Persistence**: Alert history survives restarts
+- **Tools**: `create_price_alert`, `check_alerts`, `mark_alerts_read`
+
+### 🌐 External Intelligence
+- **Fear & Greed Index**: Real-time market sentiment (Alternative.me)
+- **DeFi Intelligence**: TVL and protocol stats (DeFi Llama)
+- **Gas Tracking**: Live Ethereum gas prices (Etherscan)
+- **Tools**: `get_fear_greed_index`, `get_defi_tvl`, `get_gas_price`
+
+### 📈 Interactive Dashboard
+- **Technology**: Streamlit + Plotly
+- **Tabs**: Market Intel, Deep Brain, Execution & Risk, Alerts
 - **Run**: `streamlit run dashboard.py`
 
-### 12. Multi-Agent System (New)
-- **RiskAgent**: Portfolio concentration, exposure limits.
-- **ExecutionAgent**: Smart order routing.
-- **ResearchAgent**: Deep market analysis.
-- **ManagerAgent**: Orchestrates all agents with weighted voting.
-- **Tools**: `run_analysis_pipeline` (triggers full agent swarm).
+---
 
-## Prerequisites
-- Python 3.10 or higher
-- [uv](https://github.com/astral-sh/uv) (recommended) or pip
+## 🚀 Quick Start
 
-### Quick Start
+### Prerequisites
+- **Python 3.10+** (Python 3.13 recommended for Claude Desktop)
+- **pip** or **uv** package manager
+- **Claude Desktop** (optional, for MCP integration)
 
-1. **Clone & Install**
-   ```bash
-   git clone https://github.com/Arshad-13/Market-MCP-Test.git
-   cd Market-MCP-Test
-   pip install -r requirements.txt
-   ```
+### Installation
 
-2. **Configuration**
-   Create a `.env` file in the root directory:
-   ```env
-   # Required for CoinGecko Pro (optional for free tier but recommended)
-   CRYPTO_API_KEY=your_coingecko_key_here
-   
-   # Optional for Gas tracking
-   ETHERSCAN_API_KEY=your_etherscan_key_here
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/Arshad-13/Market-MCP-Test.git
+cd Market-MCP-Test
 
-3. **Running the Server**
-   ```bash
-   mcp run market_server.py
-   ```
+# Install dependencies
+pip install -r requirements.txt
+
+# Optional: Create .env file for API keys
+echo "CRYPTO_API_KEY=your_coingecko_key" > .env
+```
+
+### Running the Server
+
+**Option 1: MCP Server Mode (for Claude Desktop)**
+```bash
+python market_server.py
+```
+
+**Option 2: Interactive Dashboard**
+```bash
+streamlit run dashboard.py
+```
 
 ---
 
-## 🔌 Integration with Claude Desktop
+## 🔌 Claude Desktop Integration
 
-Add this to your `%APPDATA%\Claude\claude_desktop_config.json`:
+### Configuration
 
+1. **Locate config file**: `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac)
+
+2. **Add server configuration**:
 ```json
 {
   "mcpServers": {
     "market-intelligence": {
       "command": "python",
-      "args": [
-        "S:\\Market-MCP\\Market-MCP-Test\\market_server.py"
-      ],
-      "env": {
-        "CRYPTO_API_KEY": "your_key",
-        "PYTHONPATH": "S:\\Market-MCP\\Market-MCP-Test"
-      }
+      "args": ["s:/Market-MCP/Market-MCP-Test/market_server.py"],
+      "cwd": "s:/Market-MCP/Market-MCP-Test"
     }
   }
 }
 ```
 
+3. **Restart Claude Desktop**
+
+4. **Test with prompts**:
+   - `"Run analysis pipeline for BTC/USDT"`
+   - `"Get agent status"`
+   - `"Fetch orderbook for ETH/USDT"`
+
+### Firewall Configuration (Windows)
+
+If exchange tools fail with `ExchangeNotAvailable`, add firewall rules:
+
+1. Open **Windows Defender Firewall** → Advanced Settings
+2. Create **Outbound Rule** for Python:
+   - Program: `C:\Users\<YourUser>\AppData\Local\Programs\Python\Python313\python.exe`
+   - Action: Allow all connections
+3. Restart Claude Desktop
+
 ---
 
 ## 🧪 Testing
 
-The project includes a comprehensive verification suite:
-
+### Unit Tests
 ```bash
-# 1. Core Analytics Logic
-python tests/test_core_analytics.py
+# Multi-Agent System
+python tests/test_agents.py
 
-# 2. External APIs (Sentiment/DeFi)
-python tests/test_external_apis.py
+# Strategy Engine
+python tests/test_strategy.py
 
-# 3. Exchange Connectivity (Mocked)
-python tests/test_exchange_tools.py
+# Execution & Risk
+python tests/test_execution.py
 
-# 4. AI Prediction Engine
-python tests/test_ml_prediction.py
-
-# 5. Portfolio Risk
-python tests/test_portfolio_tools.py
-
-# 6. Alerts & Notifications
-python tests/test_alert_tools.py
-
-# Run All Integration Tests
+# All Integration Tests
 python tests/test_integration.py
+```
+
+### MCP Tools Testing (in Claude Desktop)
+```
+Basic Tools:
+- "Get the current price of bitcoin"
+- "What's the Fear & Greed index?"
+
+Advanced Tools:
+- "Fetch orderbook for BTC/USDT on Binance"
+- "Predict price direction for ETH based on current orderbook"
+- "Analyze portfolio risk: 50% BTC, 50% ETH"
+
+Multi-Agent Pipeline:
+- "Run analysis pipeline for BTC/USDT"
+- "Get agent status"
+- "What do all the agents think about SOL/USDT?"
 ```
 
 ---
 
-## 🏗️ Architecture
+## 📁 Project Structure
 
 ```
 Market-MCP-Test/
-├── core/                   # Analytics Engine (Ported from Genesis2025)
-│   ├── analytics.py        # Microstructure math (OFI, OBI, VPIN)
-│   ├── anomaly_detection.py# Spoofing/Layering logic
-│   └── background_service.py # Alert monitor
-├── tools/                  # MCP Tool Definitions
-│   ├── exchange_tools.py   # ccxt connectivity
-│   ├── ml_tools.py         # AI inference
-│   ├── portfolio_tools.py  # Risk analysis
-│   └── ...
-├── prompts/                # Prompt Templates
-├── tests/                  # Verification Suite
-└── market_server.py        # Main Entry Point
+├── agents/                    # Multi-Agent System
+│   ├── base_agent.py         # Abstract BaseAgent + AgentContext
+│   ├── manager_agent.py      # Coordinator with weighted voting
+│   ├── research_agent.py     # Market data + ML analysis
+│   ├── risk_agent.py         # Portfolio risk specialist
+│   └── execution_agent.py    # Smart order routing
+├── core/                      # Analytics Engine
+│   ├── analytics.py          # Microstructure (OFI, OBI, VPIN)
+│   ├── ml_models.py          # DeepLOB Lite model
+│   ├── strategy_engine.py    # Signal aggregation
+│   ├── risk_engine.py        # Pre-trade checks
+│   ├── database.py           # SQLite persistence
+│   └── background_service.py # Alert monitoring
+├── tools/                     # MCP Tool Definitions
+│   ├── agent_tools.py        # Multi-agent orchestration
+│   ├── exchange_tools.py     # CCXT connectivity
+│   ├── ml_tools.py           # AI predictions
+│   ├── strategy_tools.py     # Trading signals
+│   ├── trading_tools.py      # Paper trading
+│   ├── portfolio_tools.py    # Risk analysis
+│   ├── alert_tools.py        # Notifications
+│   └── sentiment_tools.py    # Fear/Greed, DeFi
+├── prompts/                   # MCP Prompt Templates
+│   └── market_prompts.py     # 3 prompts (briefing, liquidity, anomalies)
+├── tests/                     # Test Suite (11 files)
+├── dashboard.py              # Streamlit UI
+├── market_server.py          # MCP Server Entry Point
+└── requirements.txt          # Python dependencies
 ```
+
+---
+
+## 🛠️ Available MCP Tools (30+)
+
+### Agent Orchestration
+- `run_analysis_pipeline(symbol, sentiment_score)` - Trigger full agent swarm
+- `get_agent_status()` - Check all agents' status
+- `set_auto_execute(enabled)` - Enable/disable auto-trading
+
+### Exchange Data
+- `fetch_orderbook(symbol, exchange, limit)` - Live L2 data
+- `fetch_ticker(symbol, exchange)` - Price, volume, 24h change
+- `list_supported_exchanges()` - Available exchanges
+
+### AI & Strategy
+- `predict_price_direction(symbol, exchange)` - DeepLOB ML prediction
+- `get_trading_signal(symbol, sentiment)` - Aggregated Buy/Sell/Hold signal
+
+### Risk & Execution
+- `execute_order(symbol, side, amount, price)` - Paper trading
+- `get_positions()` - Current portfolio
+- `analyze_portfolio_risk(holdings, total_value)` - Risk scoring
+- `simulate_slippage(symbol, side, volume)` - Cost impact
+
+### Market Analysis
+- `analyze_orderbook(orderbook_json)` - Microstructure metrics
+- `detect_spoofing(orderbook_json)` - Manipulation detection
+- `calculate_microstructure_features(orderbook_json)` - OFI, OBI
+
+### Alerts & Sentiment
+- `create_price_alert(asset, target_price, direction)` - Set alert
+- `check_alerts()` - View active alerts
+- `get_fear_greed_index()` - Market sentiment
+- `get_defi_tvl(protocol)` - DeFi stats
+
+---
+
+## 📊 Dashboard Features
+
+Launch with `streamlit run dashboard.py` to access:
+
+1. **Market Intel Tab**
+   - Live BTC/USDT price
+   - 24-hour change
+   - Order book depth chart (bids vs asks)
+
+2. **Deep Brain Tab**
+   - Agent reasoning logs
+   - ML signal (action, confidence, rationale)
+   - Microstructure features (OFI, OBI, Microprice Divergence)
+
+3. **Execution & Risk Tab**
+   - Paper trading balance
+   - Active positions
+   - Risk engine limits (max trade size, daily loss, restricted assets)
+
+4. **Alerts Tab**
+   - Alert history with timestamps
+   - Status indicators
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables (.env)
+```bash
+# Optional: CoinGecko API Key (for premium features)
+CRYPTO_API_KEY=your_coingecko_api_key
+
+# Optional: Etherscan API Key (for gas tracking)
+ETHERSCAN_API_KEY=your_etherscan_key
+
+# Optional: Enable live trading (NOT RECOMMENDED)
+ENABLE_LIVE_TRADING=false
+
+# Optional: Custom database path
+DATABASE_PATH=./market_data.db
+```
+
+### Risk Engine Configuration
+Edit `core/risk_engine.py` to customize:
+- Max trade size (default: $100,000)
+- Max daily loss (default: $10,000)
+- Max position concentration (default: 10%)
+- Restricted assets list
+
+---
+
+## 🐛 Known Issues & Troubleshooting
+
+### Issue: Exchange APIs Fail with "ExchangeNotAvailable"
+**Cause:** Windows Firewall blocking Python subprocess  
+**Solution:** Add firewall rules for Python 3.13 (see Claude Desktop Integration section)
+
+### Issue: Module Not Found Errors
+**Cause:** Dependencies installed in wrong Python version  
+**Solution:** 
+```bash
+# Check Python version
+python --version
+
+# Install to correct version
+py -3.13 -m pip install -r requirements.txt
+```
+
+### Issue: Dashboard Shows No Data
+**Cause:** No database file or empty alerts  
+**Solution:** Create alerts first using MCP tools, then refresh dashboard
+
+---
+
+## 📈 Roadmap
+
+### Planned Features
+- [ ] WebSocket streaming for real-time orderbook updates
+- [ ] Backtesting framework (historical data replay)
+- [ ] Advanced ML models (Transformer-based LOB prediction)
+- [ ] Portfolio optimization (Markowitz, Black-Litterman)
+- [ ] Sentiment analysis (Twitter/Reddit integration)
+- [ ] Docker containerization
+- [ ] Cloud deployment (AWS/GCP)
+
+---
+
+## 📄 Documentation
+
+- **[Implementation Plan](docs/implementation_plan.md)** - Original design document
+- **[Project Status](docs/project_status.md)** - Current completion status
+- **[Walkthrough](docs/walkthrough.md)** - Verification results & proof of work
+- **[CHANGELOG](CHANGELOG.md)** - Version history
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📜 License
 
-MIT License. Based on the HFT Platform.
+MIT License - See [LICENSE](LICENSE) file for details.
+
+**Based on:** HFT Platform Genesis2025
+
+---
+
+## 🙏 Acknowledgments
+
+- **MCP Protocol** - Model Context Protocol by Anthropic
+- **CCXT** - CryptoCurrency eXchange Trading Library
+- **DeepLOB** - Deep Learning for Limit Order Books
+- **Genesis2025** - Original HFT analytics platform
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/Arshad-13/Market-MCP-Test/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Arshad-13/Market-MCP-Test/discussions)
+
+---
+
+**⚠️ Disclaimer**: This software is for educational and research purposes only. Not financial advice. Trade at your own risk.
