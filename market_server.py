@@ -25,7 +25,8 @@ from tools import (
     register_alert_tools,
     register_trading_tools,
     register_strategy_tools,
-    register_agent_tools
+    register_agent_tools,
+    register_streaming_tools,
 )
 from prompts import register_prompts
 from core.background_service import monitor
@@ -51,6 +52,7 @@ register_alert_tools(mcp)
 register_trading_tools(mcp)
 register_strategy_tools(mcp)
 register_agent_tools(mcp)
+register_streaming_tools(mcp)
 
 # Register prompts
 register_prompts(mcp)
