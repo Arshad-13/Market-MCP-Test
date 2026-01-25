@@ -11,17 +11,16 @@ tenacity>=8.0.0
 
 # Data Processing (for analytics)
 # Note: Using pure Python implementations where possible for portability
-# numpy and pandas are optional for advanced analytics
 
 # Type hints and validation
 pydantic>=2.0.0
 
 # Async support
 aiohttp>=3.9.0
-ccxt>=4.0.0
-numpy>=1.24.0
 aiosqlite>=0.19.0
 onnxruntime>=1.15.0
+
+# Dashboard
 streamlit>=1.30.0
 altair
 websockets>=12.0
