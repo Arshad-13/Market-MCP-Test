@@ -60,7 +60,7 @@ register_streaming_tools(mcp)
 
 # Custom agent tool: Autonomous trading
 @mcp.tool()
-def autonomous_trade(symbol: str, sentiment_score: float = 0.5, position_size: float = 0.01) -> str:
+async def autonomous_trade(symbol: str, sentiment_score: float = 0.5, position_size: float = 0.01) -> str:
     """
     Autonomous trading: Analyze market and execute trade automatically.
     
@@ -76,7 +76,7 @@ def autonomous_trade(symbol: str, sentiment_score: float = 0.5, position_size: f
     Returns:
         JSON with complete analysis + execution results
     """
-    return asyncio.run(auto_trade(symbol, sentiment_score, position_size))
+    return await auto_trade(symbol, sentiment_score, position_size)
 
 # Register prompts
 register_prompts(mcp)
