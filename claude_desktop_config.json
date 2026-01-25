@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+        "market-intelligence": {
+            "command": "python",
+            "args": [
+                "s:\\Market-MCP\\Market-MCP-Test\\market_server.py"
+            ]
+        }
+    }
+}
