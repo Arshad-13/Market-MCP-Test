@@ -1,52 +1,132 @@
 """
 Exchange Connectivity Tools
 
-MCP tools for fetching real-time market data from crypto exchanges via CCXT.
-Provides live order book and ticker data for HFT analytics.
+MCP tools for fetching real-time market data from crypto exchanges.
+**UPDATED:** Uses direct HTTP API calls instead of CCXT to bypass initialization issues.
 
-FEATURES (v1.26.1):
-- Multi-exchange fallback (Binance → Kraken → Coinbase → Bybit)
-- Auto-retry with exponential backoff
-- Enhanced error handling
+FEATURES (v1.26.2):
+- Direct HTTP API calls (no CCXT market loading)
+- Multi-exchange fallback (Binance → Kraken → Coinbase)
+- Works everywhere (no subprocess restrictions)
 """
 
 import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-
-import ccxt.async_support as ccxt
+import httpx
 from mcp.server.fastmcp import FastMCP
 
+# Exchange API endpoints
+EXCHANGE_APIS = {
+    "binance": {
+        "orderbook": "https://api.binance.com/api/v3/depth",
+        "ticker": "https://api.binance.com/api/v3/ticker/24hr"
+    },
+    "kraken": {
+        "orderbook": "https://api.kraken.com/0/public/Depth",
+        "ticker": "https://api.kraken.com/0/public/Ticker"
+    },
+    "coinbase": {
+        "orderbook": "https://api.exchange.coinbase.com/products/{symbol}/book",
+        "ticker": "https://api.exchange.coinbase.com/products/{symbol}/ticker"
+    }
+}
+
 # Exchange fallback priority order
-EXCHANGE_FALLBACK_ORDER = ["binance", "kraken", "coinbase", "bybit", "okx"]
+EXCHANGE_FALLBACK_ORDER = ["binance", "kraken", "coinbase"]
 
-# Supported exchanges for user reference
-SUPPORTED_EXCHANGES = ["binance", "kraken", "coinbase", "kucoin", "bybit", "okx"]
+# Supported exchanges
+SUPPORTED_EXCHANGES = list(EXCHANGE_APIS.keys())
 
-async def _get_exchange(exchange_id: str):
-    """
-    Factory to get an exchange instance with proper configuration.
-    """
+
+def _convert_symbol(symbol: str, exchange: str) -> str:
+    """Convert unified symbol format to exchange-specific format"""
+    # BTC/USDT → exchange-specific
+    if exchange == "binance":
+        return symbol.replace("/", "").upper()  # BTCUSDT
+    elif exchange == "kraken":
+        # Kraken uses XXBTZUSD format, but also accepts XBTUSD
+        base, quote = symbol.split("/")
+        if base == "BTC":
+            base = "XBT"
+        return base.upper() + quote.upper()
+    elif exchange == "coinbase":
+        return symbol  # BTC-USDT format
+    return symbol
+
+
+async def _fetch_binance_orderbook(symbol: str, limit: int) -> Dict[str, Any]:
+    """Fetch orderbook from Binance using direct API"""
     import sys
-    exchange_id = exchange_id.lower()
-    if exchange_id not in ccxt.exchanges:
-        raise ValueError(f"Exchange '{exchange_id}' not found in CCXT.")
     
-    # Instantiate the exchange class dynamically with config
-    exchange_class = getattr(ccxt, exchange_id)
-    exchange = exchange_class({
-        'enableRateLimit': True,  # Respect rate limits
-        'timeout': 30000,  # 30 second timeout (default is 10000)
-        'options': {
-            'defaultType': 'spot',  # Use spot market by default
-        },
-        # CRITICAL: Skip automatic market loading to avoid firewall issues
-        # This prevents CCXT from calling /exchangeInfo during init
-        'fetchMarkets': False,
-    })
+    symbol_formatted = _convert_symbol(symbol, "binance")
+    url = EXCHANGE_APIS["binance"]["orderbook"]
+    params = {"symbol": symbol_formatted, "limit": limit}
     
-    print(f"[DEBUG] Created {exchange_id} instance (skip metadata load)", file=sys.stderr)
-    return exchange
+    print(f"[DEBUG] Binance API: GET {url}?symbol={symbol_formatted}&limit={limit}", file=sys.stderr)
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        return {
+            "bids": [[float(p), float(q)] for p, q in data.get("bids", [])],
+            "asks": [[float(p), float(q)] for p, q in data.get("asks", [])],
+            "timestamp": data.get("lastUpdateId")
+        }
+
+
+async def _fetch_kraken_orderbook(symbol: str, limit: int) -> Dict[str, Any]:
+    """Fetch orderbook from Kraken using direct API"""
+    import sys
+    
+    symbol_formatted = _convert_symbol(symbol, "kraken")
+    url = EXCHANGE_APIS["kraken"]["orderbook"]
+    params = {"pair": symbol_formatted, "count": limit}
+    
+    print(f"[DEBUG] Kraken API: GET {url}?pair={symbol_formatted}&count={limit}", file=sys.stderr)
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get("error"):
+            raise Exception(f"Kraken API error: {data['error']}")
+        
+        # Kraken returns data with pair as key
+        result_key = list(data["result"].keys())[0]
+        orderbook = data["result"][result_key]
+        
+        return {
+            "bids": [[float(p), float(q)] for p, q, _ in orderbook.get("bids", [])],
+            "asks": [[float(p), float(q)] for p, q, _ in orderbook.get("asks", [])],
+            "timestamp": None
+        }
+
+
+async def _fetch_coinbase_orderbook(symbol: str, limit: int) -> Dict[str, Any]:
+    """Fetch orderbook from Coinbase using direct API"""
+    import sys
+    
+    symbol_formatted = symbol.replace("/", "-")  # BTC/USDT → BTC-USDT
+    url = EXCHANGE_APIS["coinbase"]["orderbook"].format(symbol=symbol_formatted)
+    params = {"level": 2}  # Level 2 = top 50 bids/asks
+    
+    print(f"[DEBUG] Coinbase API: GET {url}", file=sys.stderr)
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        return {
+            "bids": [[float(p), float(q)] for p, q, _ in data.get("bids", [])[:limit]],
+            "asks": [[float(p), float(q)] for p, q, _ in data.get("asks", [])[:limit]],
+            "timestamp": data.get("sequence")
+        }
+
 
 # --- Shared Tools (Accessible by Dashboard & MCP) ---
 
@@ -59,7 +139,7 @@ async def fetch_orderbook(
     """
     Fetch real-time Level 2 order book data with multi-exchange fallback.
     
-    This data is the raw fuel for 'analyze_orderbook' and 'detect_anomalies'.
+    **NEW:** Uses direct HTTP API calls (no CCXT dependency issues!)
     
     Args:
         symbol: Trading pair symbol (e.g., 'BTC/USDT', 'ETH/USD').
@@ -73,7 +153,7 @@ async def fetch_orderbook(
     # If fallback is enabled, try multiple exchanges
     exchanges_to_try = [exchange]
     if fallback:
-        # Add fallback exchanges (if not already first choice)
+        # Add fallback exchanges
         exchanges_to_try = [exchange] + [
             ex for ex in EXCHANGE_FALLBACK_ORDER if ex != exchange
         ]
@@ -81,71 +161,53 @@ async def fetch_orderbook(
     last_error = None
     
     for attempt_exchange in exchanges_to_try:
-        exchange_instance = None
         try:
             import sys
-            print(f"[DEBUG] Attempting to fetch orderbook for {symbol} from {attempt_exchange}", file=sys.stderr)
+            print(f"[INFO] Fetching orderbook for {symbol} from {attempt_exchange}", file=sys.stderr)
             
-            exchange_instance = await _get_exchange(attempt_exchange)
-            print(f"[DEBUG] Exchange instance created: {attempt_exchange}", file=sys.stderr)
+            # Call exchange-specific function
+            if attempt_exchange == "binance":
+                orderbook = await _fetch_binance_orderbook(symbol, limit)
+            elif attempt_exchange == "kraken":
+                orderbook = await _fetch_kraken_orderbook(symbol, limit)
+            elif attempt_exchange == "coinbase":
+                orderbook = await _fetch_coinbase_orderbook(symbol, limit)
+            else:
+                raise ValueError(f"Exchange {attempt_exchange} not supported yet")
             
-            # CCXT expects unified symbols. Upper case usually works best.
-            formatted_symbol = symbol.upper()
-            
-            # Fetch order book with timeout handling
-            print(f"[DEBUG] Fetching orderbook for {formatted_symbol}...", file=sys.stderr)
-            orderbook = await exchange_instance.fetch_order_book(formatted_symbol, limit)
-            print(f"[DEBUG] Orderbook fetched successfully from {attempt_exchange}!", file=sys.stderr)
+            print(f"[SUCCESS] Got {len(orderbook['bids'])} bids, {len(orderbook['asks'])} asks", file=sys.stderr)
             
             result = {
-                "symbol": formatted_symbol,
-                "exchange": attempt_exchange,  # Return actual exchange used
-                "requested_exchange": exchange,  # Original request
+                "symbol": symbol.upper(),
+                "exchange": attempt_exchange,
+                "requested_exchange": exchange,
                 "bids": orderbook["bids"],
                 "asks": orderbook["asks"],
-                "nonce": orderbook.get("nonce"),
                 "timestamp": datetime.now().isoformat(),
-                "fetched_at": orderbook.get("datetime"),
                 "fallback_used": attempt_exchange != exchange
             }
             
             return json.dumps(result)
             
-        except ImportError as e:
-            import sys
-            print(f"[ERROR] Import error: {e}", file=sys.stderr)
-            return json.dumps({
-                "error": "CCXT library not installed",
-                "message": "Please install ccxt: pip install ccxt"
-            })
         except Exception as e:
             import sys
             last_error = e
-            print(f"[ERROR] Failed {attempt_exchange}: {type(e).__name__}: {e}", file=sys.stderr)
+            print(f"[ERROR] {attempt_exchange} failed: {type(e).__name__}: {e}", file=sys.stderr)
             
-            # If this isn't the last exchange, continue to next
+            # If there are more exchanges to try, continue
             if attempt_exchange != exchanges_to_try[-1]:
-                print(f"[INFO] Trying next exchange in fallback chain...", file=sys.stderr)
+                print(f"[INFO] Trying next exchange...", file=sys.stderr)
                 continue
-                
-        finally:
-            if exchange_instance:
-                try:
-                    await exchange_instance.close()
-                except Exception as e:
-                    import sys
-                    print(f"[WARN] Error closing exchange: {e}", file=sys.stderr)
     
-    # If we get here, all exchanges failed
+    # All exchanges failed
     import sys
     print(f"[ERROR] All exchanges failed. Last error: {last_error}", file=sys.stderr)
     return json.dumps({
-        "error": f"Failed to fetch order book from all exchanges",
+        "error": "Failed to fetch order book from all exchanges",
         "requested_exchange": exchange,
         "attempted_exchanges": exchanges_to_try,
         "last_error": str(last_error),
-        "error_type": type(last_error).__name__,
-        "hint": "All exchanges failed. Check firewall settings or try manual API key configuration."
+        "error_type": type(last_error).__name__
     })
 
 
