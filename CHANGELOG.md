@@ -2,6 +2,35 @@
 
 All notable changes to the Market Intelligence MCP Server project.
 
+## [1.26.0] - 2026-01-25
+
+### Added - Phase 16: WebSocket Streaming
+- **WebSocket Manager**: `core/websocket_manager.py`
+  - Real-time WebSocket connections with auto-reconnection
+  - Exponential backoff for connection resilience (up to 5 attempts)
+  - Message normalization to unified format across exchanges
+  - Connection pooling for multi-symbol concurrent streaming
+- **Streaming Tools**: `tools/streaming_tools.py` - 5 new MCP tools
+  - `subscribe_orderbook_stream(symbol, exchange)`: Subscribe to live orderbook
+  - `subscribe_ticker_stream(symbol, exchange)`: Subscribe to live ticker
+  - `stop_stream(stream_id)`: Stop an active stream
+  - `list_active_streams()`: Get all active WebSocket connections
+  - `check_stream_health(stream_id)`: Check connection status
+- **Binance Integration**: WebSocket support for orderbook (@depth20) and ticker streams
+- **Test Suite**: `tests/test_websocket.py` - 11 comprehensive tests
+  - StreamSubscription dataclass verification
+  - WebSocketManager initialization and lifecycle
+  - Message normalization (orderbook + ticker)
+  - Stream subscription/unsubscription
+  - Tool function validation
+
+### Changed
+- **Dependencies**: Added `websockets>=12.0` to requirements.txt
+- **Server Integration**: Updated `market_server.py` to register streaming tools
+- **Package Exports**: Updated `tools/__init__.py` to export streaming functions
+
+---
+
 ## [1.25.0] - 2026-01-25
 
 ### Added - Phase 15: Multi-Agent Orchestration
