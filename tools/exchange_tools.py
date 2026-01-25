@@ -213,7 +213,9 @@ async def fetch_orderbook(
 
 async def fetch_ticker(symbol: str, exchange: str = "binance") -> str:
     """
-    Fetch the current ticker (price, volume, high/low) for a symbol.
+    Fetch 24-hour ticker data using direct HTTP API.
+    
+    **NEW:** No CCXT dependency!
     
     Args:
         symbol: Trading pair symbol (e.g., 'BTC/USDT').
@@ -222,47 +224,50 @@ async def fetch_ticker(symbol: str, exchange: str = "binance") -> str:
     Returns:
         JSON string with ticker data.
     """
-    exchange_instance = None
     try:
         import sys
-        print(f"[DEBUG] Fetching ticker for {symbol} from {exchange}", file=sys.stderr)
+        print(f"[INFO] Fetching ticker for {symbol} from {exchange}", file=sys.stderr)
         
-        exchange_instance = await _get_exchange(exchange)
-        formatted_symbol = symbol.upper()
-        
-        ticker = await exchange_instance.fetch_ticker(formatted_symbol)
-        print(f"[DEBUG] Ticker fetched successfully for {formatted_symbol}", file=sys.stderr)
-        
-        result = {
-            "symbol": formatted_symbol,
-            "exchange": exchange,
-            "last_price": ticker.get("last"),
-            "bid": ticker.get("bid"),
-            "ask": ticker.get("ask"),
-            "high": ticker.get("high"),
-            "low": ticker.get("low"),
-            "volume": ticker.get("baseVolume"),
-            "percentage_change": ticker.get("percentage"),
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        return json.dumps(result)
-        
+        if exchange == "binance":
+            symbol_formatted = _convert_symbol(symbol, "binance")
+            url = EXCHANGE_APIS["binance"]["ticker"]
+            params = {"symbol": symbol_formatted}
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                data = response.json()
+                
+                result = {
+                    "symbol": symbol.upper(),
+                    "exchange": "binance",
+                    "last_price": float(data.get("lastPrice", 0)),
+                    "volume_24h": float(data.get("volume", 0)),
+                    "quote_volume_24h": float(data.get("quoteVolume", 0)),
+                    "price_change_24h": float(data.get("priceChange", 0)),
+                    "price_change_percent_24h": float(data.get("priceChangePercent", 0)),
+                    "high_24h": float(data.get("highPrice", 0)),
+                    "low_24h": float(data.get("lowPrice", 0)),
+                    "bid": float(data.get("bidPrice", 0)),
+                    "ask": float(data.get("askPrice", 0)),
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+                print(f"[SUCCESS] Ticker: ${result['last_price']}", file=sys.stderr)
+                return json.dumps(result)
+                
+        else:
+            raise ValueError(f"Exchange {exchange} not supported for ticker yet")
+            
     except Exception as e:
         import sys
-        print(f"[ERROR] Exception in fetch_ticker: {type(e).__name__}: {e}", file=sys.stderr)
+        print(f"[ERROR] Ticker fetch failed: {type(e).__name__}: {e}", file=sys.stderr)
         return json.dumps({
             "error": f"Failed to fetch ticker from {exchange}",
             "details": str(e),
             "error_type": type(e).__name__
         })
-    finally:
-        if exchange_instance:
-            try:
-                await exchange_instance.close()
-            except Exception as e:
-                import sys
-                print(f"[WARN] Error closing exchange in fetch_ticker: {e}", file=sys.stderr)
+
 
 def list_supported_exchanges() -> str:
     """

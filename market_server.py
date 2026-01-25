@@ -107,12 +107,7 @@ def main():
     
     args = parser.parse_args()
     
-    print("🚀 Market Intelligence MCP Server Starting...")
-    print("📡 Mode: STDIO (stdin/stdout)")
-    print("🔧 For network access, run Python directly outside Claude Desktop")
-    print()
-    
-    # Run in STDIO mode
+    # Run in STDIO mode (JSON-RPC communication)
     mcp.run()
 
 if __name__ == "__main__":
