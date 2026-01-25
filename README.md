@@ -273,7 +273,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Model Context Protocol (MCP)** - Anthropic's extensible AI integration framework
-- **CCXT** - Original inspiration (replaced with direct APIs for reliability)
 - **DeepLOB** - Limit order book prediction research
 - **Alternative.me** - Fear & Greed Index data
 
@@ -284,17 +283,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues:** [GitHub Issues](https://github.com/Arshad-13/Market-MCP-Test/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/Arshad-13/Market-MCP-Test/discussions)
 - **Documentation:** [docs/](docs/)
-
----
-
-## 🚀 Roadmap
-
-- [ ] **Phase 17:** Redis caching for distributed systems
-- [ ] **Phase 18:** Backtesting framework with historical data
-- [ ] **Phase 19:** Portfolio optimization algorithms
-- [ ] **Phase 20:** Advanced sentiment analysis (Twitter, Reddit)
-- [ ] **Phase 21:** Kubernetes deployment templates
-- [ ] **Phase 22:** REST API wrapper for non-MCP clients
 
 ---
 
