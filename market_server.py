@@ -32,6 +32,10 @@ from prompts import register_prompts
 from core.background_service import monitor
 from core.database import db
 
+# Import specific agent tools for custom registration
+import asyncio
+from tools.agent_tools import run_analysis_pipeline, get_agent_status, set_auto_execute, auto_trade
+
 # Load environment variables
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -53,6 +57,26 @@ register_trading_tools(mcp)
 register_strategy_tools(mcp)
 register_agent_tools(mcp)
 register_streaming_tools(mcp)
+
+# Custom agent tool: Autonomous trading
+@mcp.tool()
+def autonomous_trade(symbol: str, sentiment_score: float = 0.5, position_size: float = 0.01) -> str:
+    """
+    Autonomous trading: Analyze market and execute trade automatically.
+    
+    Use when user says "execute a trade" or "check market and trade".
+    Combines full multi-agent analysis with automatic execution.
+    Only executes if confidence >= 70%.
+    
+    Args:
+        symbol: Trading pair (e.g., 'BTC/USDT')
+        sentiment_score: Market sentiment -1 to 1 (default: 0.5 neutral)
+        position_size: Position as fraction of balance (default: 0.01 = 1%)
+    
+    Returns:
+        JSON with complete analysis + execution results
+    """
+    return asyncio.run(auto_trade(symbol, sentiment_score, position_size))
 
 # Register prompts
 register_prompts(mcp)

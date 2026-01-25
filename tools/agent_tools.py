@@ -96,6 +96,75 @@ def set_auto_execute(enabled: bool) -> str:
     })
 
 
+async def auto_trade(symbol: str, sentiment_score: float = 0.5, position_size: float = 0.01) -> str:
+    """
+    Autonomous trading: Analyze market and execute trade automatically.
+    
+    Combines multi-agent analysis with automatic execution.
+    Only executes if confidence >= 70%.
+    
+    Args:
+        symbol: Trading pair (e.g., 'BTC/USDT')
+        sentiment_score: Market sentiment -1 to 1 (default: 0.5 neutral)
+        position_size: Position size as fraction of balance (default: 0.01 = 1%)
+    
+    Returns:
+        JSON with analysis + execution results
+    """
+    from agents.manager_agent import ManagerAgent
+    from tools.trading_tools import execute_order
+    from datetime import datetime
+    
+    try:
+        # Run full analysis
+        manager = ManagerAgent()
+        analysis = await manager.run_pipeline(symbol, sentiment_score)
+        
+        final_decision = analysis.get("final_decision")
+        confidence = analysis.get("confidence", 0)
+        
+        # Execute if confidence high enough
+        execution_result = None
+        if confidence >= 0.7:
+            if final_decision == "BUY":
+                # Get current price from analysis
+                current_price = analysis.get("agents", {}).get("research", {}).get("current_price", 0)
+                if current_price > 0:
+                    execution_result = execute_order(symbol, "buy", position_size, current_price)
+                else:
+                    execution_result = json.dumps({"status": "error", "reason": "No price data"})
+            elif final_decision == "SELL":
+                current_price = analysis.get("agents", {}).get("research", {}).get("current_price", 0)
+                if current_price > 0:
+                    execution_result = execute_order(symbol, "sell", position_size, current_price)
+                else:
+                    execution_result = json.dumps({"status": "error", "reason": "No price data"})
+            else:
+                execution_result = json.dumps({"status": "skipped", "reason": "Decision is HOLD"})
+        else:
+            execution_result = json.dumps({
+                "status": "skipped",
+                "reason": "Confidence too low",
+                "confidence": confidence,
+                "threshold": 0.7
+            })
+        
+        return json.dumps({
+            "symbol": symbol,
+            "analysis": analysis,
+            "execution": json.loads(execution_result) if isinstance(execution_result, str) else execution_result,
+            "autonomous_mode": True,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return json.dumps({
+            "error": "Auto-trade failed",
+            "details": str(e),
+            "symbol": symbol
+        })
+
+
 def register_agent_tools(mcp: FastMCP) -> None:
     """
     Register Multi-Agent MCP tools.
