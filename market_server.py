@@ -93,5 +93,44 @@ async def get_connectivity_status() -> str:
             
     return str(status)
 
+def main():
+    """Main entry point with support for standalone server mode"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Market Intelligence MCP Server")
+    parser.add_argument(
+        "--mode",
+        choices=["stdio", "tcp"],
+        default="stdio",
+        help="Server mode: stdio (for Claude Desktop subprocess) or tcp (standalone server)"
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Host to bind TCP server (only for tcp mode)"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Port to bind TCP server (only for tcp mode)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.mode == "tcp":
+        print(f"🚀 Starting Market Intelligence MCP Server in TCP mode")
+        print(f"📡 Listening on {args.host}:{args.port}")
+        print(f"🔗 Configure Claude Desktop to connect to: tcp://{args.host}:{args.port}")
+        print(f"⚡ Press Ctrl+C to stop")
+        print()
+        
+        # Run in TCP mode (standalone)
+        mcp.run(transport="sse", host=args.host, port=args.port)
+    else:
+        # Run in STDIO mode (Claude Desktop subprocess)
+        print("Market Intelligence Server Starting (STDIO mode)...")
+        mcp.run()
+
 if __name__ == "__main__":
-    mcp.run()
+    main()
