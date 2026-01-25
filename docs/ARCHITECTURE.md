@@ -46,7 +46,7 @@ The Market Intelligence MCP Server is a modular, production-ready platform for c
 ## Directory Structure
 
 ```
-Market-MCP-Test/
+CryptoIntel-MCP/
 ├── core/                      # Core business logic
 │   ├── analytics.py           # Microstructure calculations
 │   ├── anomaly_detection.py   # Market manipulation detection

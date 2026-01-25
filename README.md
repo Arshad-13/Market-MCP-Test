@@ -31,8 +31,8 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/Arshad-13/Market-MCP-Test.git
-cd Market-MCP-Test
+git clone https://github.com/Arshad-13/CryptoIntel-MCP.git
+cd CryptoIntel-MCP
 
 # Create virtual environment
 python -m venv venv
@@ -159,7 +159,7 @@ Execution Agent: Recommended entry: $142.35"
 ### Project Structure
 
 ```
-Market-MCP-Test/
+CryptoIntel-MCP/
 ├── core/           # Business logic (analytics, ML, risk)
 ├── tools/          # MCP tool implementations
 ├── agents/         # Multi-agent system

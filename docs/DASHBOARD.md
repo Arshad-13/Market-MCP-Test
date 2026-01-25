@@ -11,7 +11,7 @@ The interactive Streamlit dashboard provides a real-time UI for market analysis,
 ## Launching the Dashboard
 
 ```bash
-cd Market-MCP-Test
+cd CryptoIntel-MCP
 streamlit run dashboard.py
 ```
 
