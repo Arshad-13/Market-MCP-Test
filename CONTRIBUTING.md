@@ -6,8 +6,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Market-MCP-Test.git
-   cd Market-MCP-Test
+   git clone https://github.com/YOUR_USERNAME/CryptoIntel-MCP.git
+   cd CryptoIntel-MCP
    ```
 
 2. **Create Virtual Environment**
@@ -108,8 +108,8 @@ Your PR will be reviewed for:
 
 ## Questions?
 
-- Open an [Issue](https://github.com/Arshad-13/Market-MCP-Test/issues)
-- Join [Discussions](https://github.com/Arshad-13/Market-MCP-Test/discussions)
+- Open an [Issue](https://github.com/Arshad-13/CryptoIntel-MCP/issues)
+- Join [Discussions](https://github.com/Arshad-13/CryptoIntel-MCP/discussions)
 
 ## License
 

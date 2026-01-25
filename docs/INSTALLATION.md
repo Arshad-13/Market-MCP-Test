@@ -13,8 +13,8 @@
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Arshad-13/Market-MCP-Test.git
-cd Market-MCP-Test
+git clone https://github.com/Arshad-13/CryptoIntel-MCP.git
+cd CryptoIntel-MCP
 ```
 
 ### 2. Create Virtual Environment

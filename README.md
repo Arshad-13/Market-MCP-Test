@@ -280,8 +280,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues:** [GitHub Issues](https://github.com/Arshad-13/Market-MCP-Test/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/Arshad-13/Market-MCP-Test/discussions)
+- **Issues:** [GitHub Issues](https://github.com/Arshad-13/CryptoIntel-MCP/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/Arshad-13/CryptoIntel-MCP/discussions)
 - **Documentation:** [docs/](docs/)
 
 ---
